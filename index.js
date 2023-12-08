@@ -1,172 +1,160 @@
-  //V1.8
+"use strict";
 
-  "use strict";
+//Objeto com partes dos Ids dos inputs
+const textIdsIncludes = {
+    cep: ["fe40:tit6:occ_ic_it:odec_it_it::content", "fe40:tit6:occ_ic_it:odec_it_it::content"],
+    rua: ["fe1:tit8:odec_it_it::content", "fe1:tit8:odec_it_it::content"],
+    bairro: ["fe4:tit2:odec_it_it::content", "fe4:tit2:odec_it_it::content"],
+    cidade:["fe16:tit5:odec_it_it::content", "fe16:tit5:odec_it_it::content"],
+    estado:["fe18:tlov2:odec_lov_itLovetext::content", "fe18:tlov2:odec_lov_itLovetext::content"],
+    complemento:["fe15:tit4:odec_it_it::content", "fe15:tit4:odec_it_it::content"],
+    buttonCallShare: ["c_pnl_tmpl_17k92q:ode_pnl_tmpl:fe1:slov1:oc_srclov_input:oc_srclov_dummy_link"],
+    placeToAlert: ['oc_pnl_tmpl_knby27:ode_pnl_tmpl:oc_pnl_axnbr_cntnr']
+}
 
-  //Funcao para retirar os acentos dos endereços
-  function normalizeString(string_text){
+// Opcoes disponiveis: "rua", "bairro", "cidade", "estado", "complemento"
+// Sempre em lowerCase()
+const fieldsYouWantToAutoFill = ['rua', 'bairro', 'complemento']
+
+//Funcao para retirar os acentos dos endereços
+function normalizeString(string_text){
     return string_text.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-  }
+}
 
-  async function consultarCEP(cep) {
+//Funcao consulta CEP API
+async function consultarCEP(cep) {
     try {
-      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-      const data = await response.json();
-  
-      if (data.erro) {
-        console.log("CEP não encontrado")
-        //throw new Error('CEP não encontrado');
-      }
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await response.json();
 
-      const endereco = {
-        CEP: normalizeString(data.cep),
-        UF: normalizeString(data.uf),
-        CIDADE: normalizeString(data.localidade),
-        BAIRRO: normalizeString(data.bairro),
-        LOGRADOURO: normalizeString(data.logradouro),
-        COMPLEMENTO: normalizeString(data.complemento) || null,
-      };
+        if (data.erro) {
+            console.log("CEP não encontrado")
+            //throw new Error('CEP não encontrado');
+        }
 
-      return endereco;
+        const endereco = {
+            cep: normalizeString(data.cep),
+            estado: normalizeString(data.uf),
+            cidade: normalizeString(data.localidade),
+            bairro: normalizeString(data.bairro),
+            rua: normalizeString(data.logradouro),
+            complemento: normalizeString(data.complemento) || null,
+        };
+
+        return endereco;
     } catch (error) {
-      //console.log(error.message);
-      //return null;
+        //console.log(error.message);
+        //return null;
     }
-  }
-
-  //Funcao busca elemento por trecho de ID
-function querySelectorIncludesText (selector, text){
-  return Array.from(document.querySelectorAll(selector))
-    .find(el => el.id.includes(text));
 }
 
-  function init() {
-
-  const rua = querySelectorIncludesText('input', "i3:0:fe1:tit8:odec_it_it::content") || querySelectorIncludesText('input', "i3:1:fe1:tit8:odec_it_it::content") || false
-  const bairro = querySelectorIncludesText('input', "i3:0:fe4:tit2:odec_it_it::content") || querySelectorIncludesText('input', "i3:1:fe4:tit2:odec_it_it::content") || false
-  const cidade = querySelectorIncludesText('input', "i3:0:fe16:tit5:odec_it_it::content") || querySelectorIncludesText('input', "i3:1:fe16:tit5:odec_it_it::content") || false
-  const estado = querySelectorIncludesText('input', "i3:0:fe18:tlov2:odec_lov_itLovetext::content") || querySelectorIncludesText('input', "i3:1:fe18:tlov2:odec_lov_itLovetext::content") || false
-  const complemento = querySelectorIncludesText('input', "i3:0:fe15:tit4:odec_it_it::content") || querySelectorIncludesText('input', "i3:1:fe15:tit4:odec_it_it::content") || false
-  const cep = querySelectorIncludesText('input', "i3:0:fe40:tit6:occ_ic_it:odec_it_it::content") || querySelectorIncludesText('input', "i3:1:fe40:tit6:occ_ic_it:odec_it_it::content") || false
-
-
-
-    if (cep.value.length == 8) {
-
-        //Verifica se o valor no CEP é numérico
-        if (!isNaN(Number(cep.value))) {
-          console.log("CEP com valor numérico OK.");
-
-        } else {
-          window.alert("Use apenas números no campo CEP.")
-          cep.value = "";
-          }
-
-        consultarCEP(cep.value).then((endereco) => {
-
-            if (endereco) {
-                
-              //Preenchendo o campo rua
-                if (rua){
-                  if (endereco.LOGRADOURO !== undefined){
-                    rua.value = endereco.LOGRADOURO;
-                  }else{
-                    rua.value = ""
-                  }
-                }
-                
-                //Preenchendo o campo Bairro
-                if (bairro){
-                  if(endereco.BAIRRO !== undefined){
-                    bairro.value = endereco.BAIRRO;
-                  }else{
-                    bairro.value = ""
-                  }
-                }
-                
-                //Preenchendo o complemento
-                if (complemento){
-                  if(endereco.COMPLEMENTO !== undefined){
-                    complemento.value = endereco.COMPLEMENTO;
-                  }else{
-                    complemento.value = ""
-                  }
-                }
-
-                //Descomentar caso queira preencher cidade e estados
-                if (cidade.value == ""){
-                    //cidade.value = "Cidade Teste";
-                }
-                
-                if (estado.value == ""){
-                    //estado.value = "Estado Teste";
-                }
-
-                console.log(endereco);
-
-            } else {
-
-              if (cep.value.length !== 8){
-                console.log("Cep com tamanho incorreto.(Não consultado)")
-              } else {
-                console.log(`Erro ao consultar o CEP: ${cep.value}`);
-                }
-
-            
-            }
-          });
-
-               //Faz o campo cidade ser obrigatório
-              if (cep.value.length == 8 && cidade.value == ""){
-                setTimeout(function(){   
-                                
-                  const cidade = querySelectorIncludesText('input', "i3:0:fe16:tit5:odec_it_it::content") || querySelectorIncludesText('input', "i3:1:fe16:tit5:odec_it_it::content") || false
-                  const cep = querySelectorIncludesText('input', "i3:0:fe40:tit6:occ_ic_it:odec_it_it::content") || querySelectorIncludesText('input', "i3:1:fe40:tit6:occ_ic_it:odec_it_it::content") || false
-  
-                  if (cep.value.length == 8 && cidade.value == ""){
-                    window.alert("O Campo cidade precisa preencher automáticamente após inserção do CEP.")
-                  }
-                  },4000)  
-              }
-          
+//Funcao busca elemento por trecho de ID
+function querySelectorByIdIncludesText (selector, possibleText, win = window){
     
-    } else {
-        
-        //window.alert("Query ainda nao encontrou");
+    for (let text of possibleText){
+        let resultado = Array.from(win.document.querySelectorAll(selector)).find(el => el.id.includes(text)) || false;
+        if (resultado){
+            return resultado;
+        }
+    }
+    return false;
+}
+
+function alertaInfo(texto, local, tempo){
+    var meuFrame = document.createElement("div");
+    meuFrame.innerHTML = `<p>${texto}</p>`;
+    meuFrame.style.position = "fixed";
+    meuFrame.style.top = "50%";
+    meuFrame.style.left = "50%";
+    meuFrame.style.transform = "translate(-50%, -50%)";
+    meuFrame.style.padding = "20px";
+    meuFrame.style.backgroundColor = "#f0f0f0";
+    meuFrame.style.border = "1px solid #ccc";
+    meuFrame.style.boxShadow = "0 0 10px rgba(0, 0, 0, 0.5)";
+    meuFrame.style.display = "none"; // Inicialmente, o frame estará oculto
+
+    // Adiciona o frame ao corpo do documento
+    local.appendChild(meuFrame);
+
+    // Exibe o frame
+    meuFrame.style.display = "block";
+
+    // Oculta o frame após 8 segundos
+    setTimeout(function() {
+    meuFrame.style.display = "none";
+    }, tempo);
+}
+//Funcao que retorna um objeto com os inputs
+const formInputs = function (win = window){
+
+    return {
+        cep : querySelectorByIdIncludesText ('input', textIdsIncludes.cep, win),
+        rua: querySelectorByIdIncludesText ('input', textIdsIncludes.rua, win),
+        bairro: querySelectorByIdIncludesText ('input', textIdsIncludes.bairro, win),
+        cidade: querySelectorByIdIncludesText ('input', textIdsIncludes.cidade, win),
+        estado: querySelectorByIdIncludesText ('input', textIdsIncludes.estado, win),
+        complemento: querySelectorByIdIncludesText ('input', textIdsIncludes.complemento, win),
+        wereFounded : function(){
+            if(this.cep && this.rua && this.complemento){
+                return true
+            }else{
+                return false
+            }
+        }
+    }
+
+}
+
+
+function mayFillAdress(inputForm){
+
+    if (inputForm.cep.value.length == 8){
+        consultarCEP(inputForm.cep.value).then((endereco) => {
+            if(endereco){
+
+                console.log(endereco)
+
+                for (let field of fieldsYouWantToAutoFill){
+                    if (endereco[field] !== undefined){
+                        inputForm[field].value = endereco[field]
+                    }else{
+                        inputForm[field].value = ""
+                    }
+                }
+            const local = querySelectorByIdIncludesText('span', textIdsIncludes.placeToAlert)
+            alertaInfo('Preenchido com CEPDEMILHOES.', local, 1000)
+            }
+        })
     }
 }
 
 
-//Roda ao receber cliques na tela.
-document.addEventListener('click', function(event) {
-  
-  //Tenta definir o CEP buscando o ID (trecho do ID), ou então false
-  const cep = querySelectorIncludesText('input', "i3:0:fe40:tit6:occ_ic_it:odec_it_it::content") || querySelectorIncludesText('input', "i3:1:fe40:tit6:occ_ic_it:odec_it_it::content") || false
-  const numero = querySelectorIncludesText('input', 'ode_pnl_tmpl:i3:0:fe6:tit9:odec_it_it::content') || querySelectorIncludesText('input', 'ode_pnl_tmpl:i3:1:fe6:tit9:odec_it_it::content') || false
-  
-  //Se conseguiu pegar o CEP, entra na função.
-  if (cep) {
+//Funcao que percorre a window e os frames para encontrar os inputs
+//Ao encontrar coloca um event listener no CEP
+function loopWindowAndFramesAndCheckInputs(){
 
-      //Atribui eventListener ao input CEP.
-      if (cep){
-        cep.addEventListener('input', init)
-        
+    for (let i = 0; i < window.frames.length; i++) {
+        if(formInputs(window.frames[i]).wereFounded()){
+            console.log('Encontrou os inputs em um frame.')
+            formInputs(window.frames[i]).cep.addEventListener('input', function(){
+                mayFillAdress(formInputs(window.frames[i]))
+            })
+            return
+        }
       }
+      
+        if(formInputs(window).wereFounded()){
+            console.log("Encontrou os inputs fora de um frame.")
+            formInputs(window).cep.addEventListener('input',function(){
+                mayFillAdress(formInputs(window))
+            })
+            return        
+        }
 
-      //Se consegue obter o numero, vai verificar se é apenas numérico.
-      if (numero){
-        numero.addEventListener('input', function() {
+    console.log('Nao Localizou os inputs.')
+}
 
-            //Verifica se o valor no número é numérico
-            if (!isNaN(Number(numero.value))) {
-              console.log("Numero resid. com valor numérico OK.");
 
-            } else {
-              window.alert("Campo Number deve conter apenas números.")
-              numero.value = "";
-              }
-        })
 
-      }
-      //init()
-    };
-});
+
+window.addEventListener('click', loopWindowAndFramesAndCheckInputs)
