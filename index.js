@@ -9,7 +9,7 @@ const textIdsIncludes = {
     estado:["fe18:tlov2:odec_lov_itLovetext::content", "fe18:tlov2:odec_lov_itLovetext::content"],
     complemento:["fe15:tit4:odec_it_it::content", "fe15:tit4:odec_it_it::content"],
     buttonCallShare: ["c_pnl_tmpl_17k92q:ode_pnl_tmpl:fe1:slov1:oc_srclov_input:oc_srclov_dummy_link"],
-    placeToAlert: ['oc_pnl_tmpl_knby27:ode_pnl_tmpl:oc_pnl_axnbr_cntnr']
+    placeToAlert: ['oc_pnl_tmpl_knby27:ode_pnl_tmpl:oc_pnl_axnbr_cntnr', ':dc_cbi1:odec_cb_itm']
 }
 
 // Opcoes disponiveis: "rua", "bairro", "cidade", "estado", "complemento"
@@ -74,8 +74,10 @@ function alertaInfo(texto, local, tempo){
     meuFrame.style.display = "none"; // Inicialmente, o frame estará oculto
 
     // Adiciona o frame ao corpo do documento
-    local.appendChild(meuFrame);
-
+    if(local){
+        local.appendChild(meuFrame);
+    }
+    
     // Exibe o frame
     meuFrame.style.display = "block";
 
