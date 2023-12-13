@@ -71,6 +71,7 @@ function alertaInfo(texto, local, tempo){
     meuFrame.style.backgroundColor = "#f0f0f0";
     meuFrame.style.border = "1px solid #ccc";
     meuFrame.style.boxShadow = "0 0 10px rgba(0, 0, 0, 0.5)";
+    meuFrame.style.zIndex = "500000"
     meuFrame.style.display = "none"; // Inicialmente, o frame estará oculto
 
     // Adiciona o frame ao corpo do documento
@@ -102,29 +103,29 @@ const formInputs = function (win = window){
             }else{
                 return false
             }
-        }
+        },
+    win : win
     }
-
 }
 
 
 function mayFillAdress(inputForm){
 
     if (inputForm.cep.value.length == 8){
-        consultarCEP(inputForm.cep.value).then((endereco) => {
-            if(endereco){
+        consultarCEP(inputForm.cep.value).then((correiosData) => {
+            if(correiosData){
 
-                console.log(endereco)
+                console.log(correiosData)
 
                 for (let field of fieldsYouWantToAutoFill){
-                    if (endereco[field] !== undefined){
-                        inputForm[field].value = endereco[field]
+                    if (correiosData[field] !== undefined){
+                        inputForm[field].value = correiosData[field]
                     }else{
                         inputForm[field].value = ""
                     }
                 }
             const local = querySelectorByIdIncludesText('span', textIdsIncludes.placeToAlert)
-            alertaInfo('Preenchido com CEPDEMILHOES.', local, 1000)
+            alertaInfo('Preenchido com CEPDEMILHOES.', document.body, 4000)
             }
         })
     }
@@ -136,6 +137,7 @@ function mayFillAdress(inputForm){
 function loopWindowAndFramesAndCheckInputs(){
 
     for (let i = 0; i < window.frames.length; i++) {
+ 
         if(formInputs(window.frames[i]).wereFounded()){
             console.log('Encontrou os inputs em um frame.')
             formInputs(window.frames[i]).cep.addEventListener('input', function(){
@@ -156,7 +158,18 @@ function loopWindowAndFramesAndCheckInputs(){
     console.log('Nao Localizou os inputs.')
 }
 
+window.addEventListener('click', 
+    function(){
+        setTimeout(
+           function(){
+                const f = querySelectorByIdIncludesText('div', 'ttxt')
+                if(f){
+                    f.click()
+                }
+                loopWindowAndFramesAndCheckInputs()}, 4000
+        )
+    }
+
+)
 
 
-
-window.addEventListener('click', loopWindowAndFramesAndCheckInputs)
