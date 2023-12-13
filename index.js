@@ -71,7 +71,7 @@ function alertaInfo(texto, local, tempo){
     meuFrame.style.backgroundColor = "#f0f0f0";
     meuFrame.style.border = "1px solid #ccc";
     meuFrame.style.boxShadow = "0 0 10px rgba(0, 0, 0, 0.5)";
-    meuFrame.style.zIndex = "500000"
+    meuFrame.style.zIndex = "9999"
     meuFrame.style.display = "none"; // Inicialmente, o frame estará oculto
 
     // Adiciona o frame ao corpo do documento
@@ -158,18 +158,41 @@ function loopWindowAndFramesAndCheckInputs(){
     console.log('Nao Localizou os inputs.')
 }
 
-window.addEventListener('click', 
+
+
+this.setInterval(
     function(){
-        setTimeout(
+     loopWindowAndFramesAndCheckInputs()
+    },4000)
+
+
+
+if(false){
+
+    //Trecho inutil
+
+    window.addEventListener('', 
+
+    function(){
+
+        const f = querySelectorByIdIncludesText('div', ['ttxt'])
+        if(f){
+            f.click()
+        }
+
+        this.setInterval(
            function(){
-                const f = querySelectorByIdIncludesText('div', 'ttxt')
-                if(f){
-                    f.click()
-                }
-                loopWindowAndFramesAndCheckInputs()}, 4000
-        )
+            loopWindowAndFramesAndCheckInputs()
+                console.log('')
+                //loopWindowAndFramesAndCheckInputs()}, 4000
+           },4000)
     }
 
 )
+
+
+}
+
+
 
 
