@@ -1,5 +1,14 @@
 "use strict";
 
+//true para visualizar informes no console do navegador
+const DEBUGGING_ON_CONSOLE = false
+
+//FUNCAO PRINCIPAL. Executa a cada 4 segundos procurando os inputs de endereço
+this.setInterval(
+    function(){
+     loopWindowAndFramesAndCheckInputs()
+    },4000)
+
 //Objeto com partes dos Ids dos inputs
 const textIdsIncludes = {
     cep: ["fe40:tit6:occ_ic_it:odec_it_it::content", "fe40:tit6:occ_ic_it:odec_it_it::content"],
@@ -9,7 +18,16 @@ const textIdsIncludes = {
     estado:["fe18:tlov2:odec_lov_itLovetext::content", "fe18:tlov2:odec_lov_itLovetext::content"],
     complemento:["fe15:tit4:odec_it_it::content", "fe15:tit4:odec_it_it::content"],
     buttonCallShare: ["c_pnl_tmpl_17k92q:ode_pnl_tmpl:fe1:slov1:oc_srclov_input:oc_srclov_dummy_link"],
-    placeToAlert: ['oc_pnl_tmpl_knby27:ode_pnl_tmpl:oc_pnl_axnbr_cntnr', ':dc_cbi1:odec_cb_itm']
+    placeToAlert: ['ode_pnl_tlbr_cntnr', 'oc_pnl_tmpl_knby27:ode_pnl_tmpl:oc_pnl_axnbr_cntnr', ':dc_cbi1:odec_cb_itm']
+}
+
+//Funçao basica de log
+const log = {
+    log: function(msg){
+        if (DEBUGGING_ON_CONSOLE){
+            console.log(msg)
+        }
+    }
 }
 
 // Opcoes disponiveis: "rua", "bairro", "cidade", "estado", "complemento"
@@ -28,7 +46,7 @@ async function consultarCEP(cep) {
         const data = await response.json();
 
         if (data.erro) {
-            console.log("CEP não encontrado")
+            log.log("CEP não encontrado")
             //throw new Error('CEP não encontrado');
         }
 
@@ -43,7 +61,7 @@ async function consultarCEP(cep) {
 
         return endereco;
     } catch (error) {
-        //console.log(error.message);
+        log.log(error.message);
         //return null;
     }
 }
@@ -60,7 +78,23 @@ function querySelectorByIdIncludesText (selector, possibleText, win = window){
     return false;
 }
 
+//Funcao busca elemento por trecho de content
+function querySelectorByContentIncludesText (selector, possibleText, win = window){
+
+    for (let text of possibleText){
+        let resultado = Array.from(win.document.querySelectorAll(selector)).find(el => el.textContent.includes(text) || el.innerText.includes(text)) || false;
+        if (resultado){
+            log.log("TIPO RESULTADO", typeof(resultado))
+            return resultado;
+        }
+    }
+    return false;
+}
+
+//Alerta passageiro informando o preenchimento dos dados
 function alertaInfo(texto, local, tempo){
+
+    //Elemento a ser criado
     var meuFrame = document.createElement("div");
     meuFrame.innerHTML = `<p>${texto}</p>`;
     meuFrame.style.position = "fixed";
@@ -70,23 +104,24 @@ function alertaInfo(texto, local, tempo){
     meuFrame.style.padding = "20px";
     meuFrame.style.backgroundColor = "#f0f0f0";
     meuFrame.style.border = "1px solid #ccc";
-    meuFrame.style.boxShadow = "0 0 10px rgba(0, 0, 0, 0.5)";
-    meuFrame.style.zIndex = "9999"
-    meuFrame.style.display = "none"; // Inicialmente, o frame estará oculto
+    meuFrame.style.boxShadow = "0 0 6px rgba(0, 0, 0, 0.5)";
+    meuFrame.style.zIndex = 9999999999999
+    meuFrame.style.fontFamily = "Arial, sans-serif";
+    meuFrame.style.fontSize = "16px";
+    meuFrame.style.color = "#333";
 
-    // Adiciona o frame ao corpo do documento
+    //Inicia oculto, exibe e oculta em determinado tempo
+    meuFrame.style.display = "none";
     if(local){
         local.appendChild(meuFrame);
     }
-    
-    // Exibe o frame
     meuFrame.style.display = "block";
-
-    // Oculta o frame após 8 segundos
     setTimeout(function() {
-    meuFrame.style.display = "none";
+    meuFrame.style.display = "none";    
     }, tempo);
+
 }
+
 //Funcao que retorna um objeto com os inputs
 const formInputs = function (win = window){
 
@@ -108,14 +143,14 @@ const formInputs = function (win = window){
     }
 }
 
-
+//Se a numeracao do CEP estiver certa, consulta a API e preenche os demais campos
 function mayFillAdress(inputForm){
 
     if (inputForm.cep.value.length == 8){
         consultarCEP(inputForm.cep.value).then((correiosData) => {
             if(correiosData){
 
-                console.log(correiosData)
+                log.log(correiosData)
 
                 for (let field of fieldsYouWantToAutoFill){
                     if (correiosData[field] !== undefined){
@@ -124,8 +159,9 @@ function mayFillAdress(inputForm){
                         inputForm[field].value = ""
                     }
                 }
-            const local = querySelectorByIdIncludesText('span', textIdsIncludes.placeToAlert)
-            alertaInfo('Preenchido com CEPDEMILHOES.', document.body, 4000)
+
+            alertaInfo('Preenchido com CEPDEMILHÕES ;)', querySelectorByContentIncludesText('span', ['HOME']), 1500)
+
             }
         })
     }
@@ -139,7 +175,7 @@ function loopWindowAndFramesAndCheckInputs(){
     for (let i = 0; i < window.frames.length; i++) {
  
         if(formInputs(window.frames[i]).wereFounded()){
-            console.log('Encontrou os inputs em um frame.')
+            log.log('Encontrou os inputs em um frame.')
             formInputs(window.frames[i]).cep.addEventListener('input', function(){
                 mayFillAdress(formInputs(window.frames[i]))
             })
@@ -148,51 +184,12 @@ function loopWindowAndFramesAndCheckInputs(){
       }
       
         if(formInputs(window).wereFounded()){
-            console.log("Encontrou os inputs fora de um frame.")
+            log.log("Encontrou os inputs fora de um frame.")
             formInputs(window).cep.addEventListener('input',function(){
                 mayFillAdress(formInputs(window))
             })
             return        
         }
 
-    console.log('Nao Localizou os inputs.')
+    log.log('Nao Localizou os inputs.')
 }
-
-
-
-this.setInterval(
-    function(){
-     loopWindowAndFramesAndCheckInputs()
-    },4000)
-
-
-
-if(false){
-
-    //Trecho inutil
-
-    window.addEventListener('', 
-
-    function(){
-
-        const f = querySelectorByIdIncludesText('div', ['ttxt'])
-        if(f){
-            f.click()
-        }
-
-        this.setInterval(
-           function(){
-            loopWindowAndFramesAndCheckInputs()
-                console.log('')
-                //loopWindowAndFramesAndCheckInputs()}, 4000
-           },4000)
-    }
-
-)
-
-
-}
-
-
-
-
