@@ -1,6 +1,6 @@
 "use strict";
 
-//true para visualizar informes no console do navegador
+//true para visualizar log no console do navegador
 const DEBUGGING_ON_CONSOLE = false
 
 //FUNCAO PRINCIPAL. Executa a cada 4 segundos procurando os inputs de endereço
@@ -11,12 +11,12 @@ this.setInterval(
 
 //Objeto com partes dos Ids dos inputs
 const textIdsIncludes = {
-    cep: ["fe40:tit6:occ_ic_it:odec_it_it::content", "fe40:tit6:occ_ic_it:odec_it_it::content"],
-    rua: ["fe1:tit8:odec_it_it::content", "fe1:tit8:odec_it_it::content"],
-    bairro: ["fe4:tit2:odec_it_it::content", "fe4:tit2:odec_it_it::content"],
-    cidade:["fe16:tit5:odec_it_it::content", "fe16:tit5:odec_it_it::content"],
-    estado:["fe18:tlov2:odec_lov_itLovetext::content", "fe18:tlov2:odec_lov_itLovetext::content"],
-    complemento:["fe15:tit4:odec_it_it::content", "fe15:tit4:odec_it_it::content"],
+    cep: ["fe40:tit6:occ_ic_it:odec_it_it::content"],
+    rua: ["fe1:tit8:odec_it_it::content"],
+    bairro: ["fe4:tit2:odec_it_it::content"],
+    cidade:["fe16:tit5:odec_it_it::content"],
+    estado:["fe18:tlov2:odec_lov_itLovetext::content"],
+    complemento:["fe15:tit4:odec_it_it::content"],
     buttonCallShare: ["c_pnl_tmpl_17k92q:ode_pnl_tmpl:fe1:slov1:oc_srclov_input:oc_srclov_dummy_link"],
     placeToAlert: ['ode_pnl_tlbr_cntnr', 'oc_pnl_tmpl_knby27:ode_pnl_tmpl:oc_pnl_axnbr_cntnr', ':dc_cbi1:odec_cb_itm']
 }
@@ -95,29 +95,29 @@ function querySelectorByContentIncludesText (selector, possibleText, win = windo
 function alertaInfo(texto, local, tempo){
 
     //Elemento a ser criado
-    var meuFrame = document.createElement("div");
-    meuFrame.innerHTML = `<p>${texto}</p>`;
-    meuFrame.style.position = "fixed";
-    meuFrame.style.top = "50%";
-    meuFrame.style.left = "50%";
-    meuFrame.style.transform = "translate(-50%, -50%)";
-    meuFrame.style.padding = "20px";
-    meuFrame.style.backgroundColor = "#f0f0f0";
-    meuFrame.style.border = "1px solid #ccc";
-    meuFrame.style.boxShadow = "0 0 6px rgba(0, 0, 0, 0.5)";
-    meuFrame.style.zIndex = 9999999999999
-    meuFrame.style.fontFamily = "Arial, sans-serif";
-    meuFrame.style.fontSize = "16px";
-    meuFrame.style.color = "#333";
+    var alertElement = document.createElement("div");
+    alertElement.innerHTML = `<p>${texto}</p>`;
+    alertElement.style.position = "fixed";
+    alertElement.style.top = "50%";
+    alertElement.style.left = "50%";
+    alertElement.style.transform = "translate(-50%, -50%)";
+    alertElement.style.padding = "20px";
+    alertElement.style.backgroundColor = "#f0f0f0";
+    alertElement.style.border = "1px solid #ccc";
+    alertElement.style.boxShadow = "0 0 6px rgba(0, 0, 0, 0.5)";
+    alertElement.style.zIndex = 9999999999999
+    alertElement.style.fontFamily = "Arial, sans-serif";
+    alertElement.style.fontSize = "16px";
+    alertElement.style.color = "#333";
 
     //Inicia oculto, exibe e oculta em determinado tempo
-    meuFrame.style.display = "none";
+    alertElement.style.display = "none";
     if(local){
-        local.appendChild(meuFrame);
+        local.appendChild(alertElement);
     }
-    meuFrame.style.display = "block";
+    alertElement.style.display = "block";
     setTimeout(function() {
-    meuFrame.style.display = "none";    
+    alertElement.style.display = "none";    
     }, tempo);
 
 }
@@ -160,13 +160,12 @@ function mayFillAdress(inputForm){
                     }
                 }
 
-            alertaInfo('Preenchido com CEPDEMILHÕES ;)', querySelectorByContentIncludesText('span', ['HOME']), 1500)
+            alertaInfo('Preenchido com CEPDEMILHÕES ;)', document.body, 1500)
 
             }
         })
     }
 }
-
 
 //Funcao que percorre a window e os frames para encontrar os inputs
 //Ao encontrar coloca um event listener no CEP
