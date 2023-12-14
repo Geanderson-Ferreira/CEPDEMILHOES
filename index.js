@@ -133,11 +133,7 @@ const formInputs = function (win = window){
         estado: querySelectorByIdIncludesText ('input', textIdsIncludes.estado, win),
         complemento: querySelectorByIdIncludesText ('input', textIdsIncludes.complemento, win),
         wereFounded : function(){
-            if(this.cep && this.rua && this.complemento){
-                return true
-            }else{
-                return false
-            }
+            return this.cep && this.rua && this.complemento
         },
     win : win
     }
